@@ -144,6 +144,7 @@ namespace QuantumLeap
                 yield break;
             }
 
+            QuantumLeapLogger.LogDebug($"Fetching data from {url}");
             var task = QuantumLeapManager.FetchDataAsync(url);
             
             while (!task.IsCompleted)
@@ -185,6 +186,7 @@ namespace QuantumLeap
                 yield break;
             }
 
+            QuantumLeapLogger.LogDebug($"Posting data to {url}");
             var task = QuantumLeapManager.PostDataAsync(url, data);
             
             while (!task.IsCompleted)
