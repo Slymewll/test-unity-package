@@ -166,7 +166,7 @@ namespace QuantumLeap
 
                 if (_logToConsole)
                 {
-                    QuantumLeapLogger.Log($"Data fetched successfully from {url}", result);
+                    QuantumLeapLogger.Log($"Data fetched successfully from {url}: {result}");
                 }
             }
             catch (Exception ex)
@@ -207,7 +207,7 @@ namespace QuantumLeap
 
                 if (_logToConsole)
                 {
-                    QuantumLeapLogger.Log($"Data posted successfully to {url}", result);
+                    QuantumLeapLogger.Log($"Data posted successfully to {url}: {result}");
                 }
             }
             catch (Exception ex)
@@ -230,7 +230,7 @@ namespace QuantumLeap
         {
             if (_logToConsole)
             {
-                QuantumLeapLogger.Log($"API response received from {url}", data);
+                QuantumLeapLogger.Log($"API response received from {url}: {data}");
             }
         }
 

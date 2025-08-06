@@ -111,7 +111,7 @@ namespace QuantumLeap
                     
                     var content = await response.Content.ReadAsStringAsync();
                     
-                    QuantumLeapLogger.Log($"API Response received from {url}", content);
+                    QuantumLeapLogger.Log($"API Response received from {url}: {content}");
                     OnApiResponseReceived?.Invoke(url, content);
                     
                     return content;
@@ -159,7 +159,7 @@ namespace QuantumLeap
                     
                     var content = await response.Content.ReadAsStringAsync();
                     
-                    QuantumLeapLogger.Log($"POST Response received from {url}", content);
+                    QuantumLeapLogger.Log($"POST Response received from {url}: {content}");
                     OnApiResponseReceived?.Invoke(url, content);
                     
                     return content;
