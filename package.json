@@ -1,0 +1,40 @@
+{
+    "name": "com.quantumleap.plugin",
+    "version": "1.0.0",
+    "displayName": "Quantum Leap Plugin",
+    "description": "A Unity plugin for fetching data from APIs and logging it with configurable logging system and easy integration.",
+    "unity": "2021.3",
+    "unityRelease": "0b1",
+    "dependencies": {},
+    "keywords": [
+        "api",
+        "http",
+        "logging",
+        "network",
+        "plugin",
+        "rest",
+        "json",
+        "async"
+    ],
+    "author": {
+        "name": "Quantum Leap Team",
+        "email": "support@quantumleap.com",
+        "url": "https://quantumleap.com"
+    },
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/quantumleap/unity-plugin.git"
+    },
+    "bugs": {
+        "url": "https://github.com/quantumleap/unity-plugin/issues"
+    },
+    "homepage": "https://github.com/quantumleap/unity-plugin#readme",
+    "samples": [
+        {
+            "displayName": "Basic API Usage",
+            "description": "Shows basic usage of the Quantum Leap Plugin for API calls",
+            "path": "Samples~/BasicUsage"
+        }
+    ]
+} 
