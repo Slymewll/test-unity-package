@@ -1,14 +1,18 @@
 {
-    "name": "QuantumLeapPlugin.Runtime",
-    "rootNamespace": "QuantumLeap",
-    "references": [],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
-} 
+  "name": "QLPlugin.Runtime",
+  "rootNamespace": "QuantumLeap",
+  "references": [
+    "UnityEngine",
+    "UnityEngine.CoreModule",
+    "UnityEngine.Networking"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

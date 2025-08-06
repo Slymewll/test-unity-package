@@ -5,10 +5,6 @@ using UnityEngine;
 
 namespace QuantumLeap
 {
-    /// <summary>
-    /// MonoBehaviour component for easy integration of Quantum Leap plugin
-    /// Can be attached to GameObjects in Unity scenes
-    /// </summary>
     public class QuantumLeapComponent : MonoBehaviour
     {
         [Header("Quantum Leap Settings")]
@@ -17,32 +13,22 @@ namespace QuantumLeap
         [SerializeField] private QuantumLeapLogger.LogLevel _logLevel = QuantumLeapLogger.LogLevel.Info;
 
         [Header("API Configuration")]
-        [SerializeField] private string _defaultApiUrl = "https://jsonplaceholder.typicode.com/posts/1";
+        [SerializeField] private string _apiUrl;
+
+        [SerializeField] private string _apiKey;
         [SerializeField] private float _requestTimeout = 30f;
 
-        [Header("Events")]
-        [SerializeField] private bool _enableEvents = true;
+        [SerializeField] private int _maxRetries = 3;
+        [SerializeField] private float _retryDelay = 1f;
 
-        /// <summary>
-        /// Event fired when the component is initialized
-        /// </summary>
         public event Action OnComponentInitialized;
 
-        /// <summary>
-        /// Event fired when API data is received
-        /// </summary>
         public event Action<string> OnDataReceived;
 
-        /// <summary>
-        /// Event fired when an error occurs
-        /// </summary>
         public event Action<string> OnErrorOccurred;
 
         private bool _isInitialized = false;
 
-        /// <summary>
-        /// Gets whether the component is initialized
-        /// </summary>
         public bool IsInitialized => _isInitialized;
 
         private void Awake()
@@ -66,30 +52,51 @@ namespace QuantumLeap
             Cleanup();
         }
 
-        /// <summary>
-        /// Initializes the Quantum Leap component
-        /// </summary>
-        public void Initialize()
+        private void ValidateInput()
         {
+            if (string.IsNullOrEmpty(_apiUrl))
+            {
+                throw new Exception("Default API URL is not set");
+            }
+
+            if (_requestTimeout <= 0)
+            {
+                throw new Exception("Request timeout must be greater than 0");
+            }
+        }
+
+        protected Dictionary<string, string> GetHeaders()
+        {
+            var headers = new Dictionary<string, string>
+            {
+                { "Content-Type", "application/json" }
+            };
+
+            if (!string.IsNullOrEmpty(_apiKey))
+            {
+                headers["x-api-key"] = $"{_apiKey}";
+            }
+
+            return headers;
+        }
+
+        public virtual void Initialize()
+        {
+            ValidateInput();
+
             if (_isInitialized) return;
 
             try
             {
-                // Configure logger
                 QuantumLeapLogger.CurrentLogLevel = _logLevel;
                 QuantumLeapLogger.IncludeTimestamps = true;
                 QuantumLeapLogger.IncludeLogLevel = true;
 
-                // Subscribe to events if enabled
-                if (_enableEvents)
-                {
-                    QuantumLeapManager.OnInitialized += OnManagerInitialized;
-                    QuantumLeapManager.OnApiResponseReceived += OnApiResponseReceived;
-                    QuantumLeapManager.OnError += OnManagerError;
-                }
+                QuantumLeapManager.OnInitialized += OnManagerInitialized;
+                QuantumLeapManager.OnApiResponseReceived += OnApiResponseReceived;
+                QuantumLeapManager.OnError += OnManagerError;
 
-                // Initialize the manager with custom timeout
-                QuantumLeapManager.Initialize(_requestTimeout);
+                QuantumLeapManager.Initialize(_requestTimeout, _maxRetries, _retryDelay);
 
                 _isInitialized = true;
                 OnComponentInitialized?.Invoke();
@@ -106,37 +113,7 @@ namespace QuantumLeap
             }
         }
 
-        /// <summary>
-        /// Fetches data from the default API URL
-        /// </summary>
-        /// <returns>Coroutine for the fetch operation</returns>
-        public Coroutine FetchDefaultData()
-        {
-            return StartCoroutine(FetchDataCoroutine(_defaultApiUrl));
-        }
-
-        /// <summary>
-        /// Fetches data from a specified URL
-        /// </summary>
-        /// <param name="url">The URL to fetch data from</param>
-        /// <returns>Coroutine for the fetch operation</returns>
-        public Coroutine FetchData(string url)
-        {
-            return StartCoroutine(FetchDataCoroutine(url));
-        }
-
-        /// <summary>
-        /// Posts data to a specified URL
-        /// </summary>
-        /// <param name="url">The URL to post data to</param>
-        /// <param name="data">The data to post (JSON string)</param>
-        /// <returns>Coroutine for the post operation</returns>
-        public Coroutine PostData(string url, string data)
-        {
-            return StartCoroutine(PostDataCoroutine(url, data));
-        }
-
-        private IEnumerator FetchDataCoroutine(string url)
+        protected IEnumerator FetchDataCoroutine(string url)
         {
             if (!_isInitialized)
             {
@@ -144,12 +121,12 @@ namespace QuantumLeap
                 yield break;
             }
 
-            QuantumLeapLogger.LogDebug($"Fetching data from {url}");
-            var task = QuantumLeapManager.FetchDataAsync(url);
-            
+            var headers = GetHeaders();
+
+            var task = QuantumLeapManager.FetchDataAsync(url, headers);
+
             while (!task.IsCompleted)
             {
-                QuantumLeapLogger.LogDebug($"Fetching data from {url} - waiting for completion");
                 yield return null;
             }
 
@@ -180,7 +157,7 @@ namespace QuantumLeap
             }
         }
 
-        private IEnumerator PostDataCoroutine(string url, string data)
+        protected IEnumerator PostDataCoroutine(string url, string data)
         {
             if (!_isInitialized)
             {
@@ -188,9 +165,10 @@ namespace QuantumLeap
                 yield break;
             }
 
-            QuantumLeapLogger.LogDebug($"Posting data to {url}");
-            var task = QuantumLeapManager.PostDataAsync(url, data);
-            
+            var headers = GetHeaders();
+
+            var task = QuantumLeapManager.PostDataAsync(url, data, headers);
+
             while (!task.IsCompleted)
             {
                 yield return null;
@@ -222,7 +200,7 @@ namespace QuantumLeap
             }
         }
 
-        private void OnManagerInitialized()
+        protected void OnManagerInitialized()
         {
             if (_logToConsole)
             {
@@ -230,7 +208,7 @@ namespace QuantumLeap
             }
         }
 
-        private void OnApiResponseReceived(string url, object data)
+        protected virtual void OnApiResponseReceived(string url, object data)
         {
             if (_logToConsole)
             {
@@ -238,7 +216,7 @@ namespace QuantumLeap
             }
         }
 
-        private void OnManagerError(string error)
+        protected void OnManagerError(string error)
         {
             if (_logToConsole)
             {
@@ -247,41 +225,29 @@ namespace QuantumLeap
             OnErrorOccurred?.Invoke(error);
         }
 
-        private void Cleanup()
+        protected void Cleanup()
         {
-            if (_enableEvents)
-            {
-                QuantumLeapManager.OnInitialized -= OnManagerInitialized;
-                QuantumLeapManager.OnApiResponseReceived -= OnApiResponseReceived;
-                QuantumLeapManager.OnError -= OnManagerError;
-            }
+            QuantumLeapManager.OnInitialized -= OnManagerInitialized;
+            QuantumLeapManager.OnApiResponseReceived -= OnApiResponseReceived;
+            QuantumLeapManager.OnError -= OnManagerError;
 
             _isInitialized = false;
         }
 
-        /// <summary>
-        /// Gets the default API URL
-        /// </summary>
-        public string DefaultApiUrl => _defaultApiUrl;
+        public string ApiUrl => _apiUrl;
 
-        /// <summary>
-        /// Gets the current request timeout in seconds
-        /// </summary>
         public float RequestTimeout => _requestTimeout;
 
-        /// <summary>
-        /// Sets the default API URL
-        /// </summary>
-        /// <param name="url">The new default URL</param>
-        public void SetDefaultApiUrl(string url)
+        public void SetApiUrl(string url)
         {
-            _defaultApiUrl = url;
+            _apiUrl = url;
         }
 
-        /// <summary>
-        /// Sets the request timeout (only affects new requests, not already initialized manager)
-        /// </summary>
-        /// <param name="timeoutSeconds">Timeout in seconds</param>
+        public void SetApiKey(string key)
+        {
+            _apiKey = key;
+        }
+
         public void SetRequestTimeout(float timeoutSeconds)
         {
             if (timeoutSeconds <= 0)
@@ -291,7 +257,6 @@ namespace QuantumLeap
             }
 
             _requestTimeout = timeoutSeconds;
-            QuantumLeapLogger.LogDebug($"Request timeout updated to: {timeoutSeconds} seconds");
         }
     }
-} 
+}
