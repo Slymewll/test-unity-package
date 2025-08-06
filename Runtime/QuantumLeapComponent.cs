@@ -149,11 +149,13 @@ namespace QuantumLeap
             
             while (!task.IsCompleted)
             {
+                QuantumLeapLogger.LogDebug($"Fetching data from {url} - waiting for completion");
                 yield return null;
             }
 
             if (task.Exception != null)
             {
+                QuantumLeapLogger.LogError($"Fetching data from {url} - exception: {task.Exception.Message}");
                 var errorMessage = $"Failed to fetch data from {url}: {task.Exception.Message}";
                 QuantumLeapLogger.LogError(errorMessage);
                 OnErrorOccurred?.Invoke(errorMessage);

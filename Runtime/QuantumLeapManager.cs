@@ -96,6 +96,7 @@ namespace QuantumLeap
 
             try
             {
+                QuantumLeapLogger.LogDebug($"Fetching data from {url}");
                 using (var request = new HttpRequestMessage(HttpMethod.Get, url))
                 {
                     if (headers != null)
@@ -106,6 +107,7 @@ namespace QuantumLeap
                         }
                     }
 
+                    QuantumLeapLogger.LogDebug($"Sending request to {url}");
                     var response = await _httpClient.SendAsync(request);
                     response.EnsureSuccessStatusCode();
                     
