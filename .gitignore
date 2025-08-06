@@ -28,6 +28,3 @@ dist/
 local/
 temp/
 test_plugin.py
-
-# Unity meta files for samples (samples should not have .meta files in packages)
-Samples~/**/*.meta
