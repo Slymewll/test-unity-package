@@ -36,23 +36,25 @@ namespace QuantumLeap.Editor
             // Wait for initialization
             yield return new WaitForSeconds(0.1f);
             
+            var task = QuantumLeapManager.FetchDataAsync("https://jsonplaceholder.typicode.com/posts/1");
+            
+            while (!task.IsCompleted)
+            {
+                yield return null;
+            }
+
+            // Check for exceptions before entering try-catch
+            if (task.Exception != null)
+            {
+                var errorMessage = $"API test failed: {task.Exception.Message}";
+                Debug.LogError(errorMessage);
+                yield break;
+            }
+
             try
             {
-                var task = QuantumLeapManager.FetchDataAsync("https://jsonplaceholder.typicode.com/posts/1");
-                
-                while (!task.IsCompleted)
-                {
-                    yield return null;
-                }
-
-                if (task.Exception != null)
-                {
-                    Debug.LogError($"API test failed: {task.Exception.Message}");
-                }
-                else
-                {
-                    Debug.Log($"API test successful! Response: {task.Result}");
-                }
+                var result = task.Result;
+                Debug.Log($"API test successful! Response: {result}");
             }
             catch (System.Exception ex)
             {
